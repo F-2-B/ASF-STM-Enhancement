@@ -5,6 +5,7 @@
 // @license         Apache-2.0
 // @author          Rudokhvist
 // @author          iBreakEverything
+// @author          F-2-B
 // @match           *://steamcommunity.com/id/*/badges
 // @match           *://steamcommunity.com/id/*/badges/
 // @match           *://steamcommunity.com/profiles/*/badges
