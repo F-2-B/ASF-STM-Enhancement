@@ -31,10 +31,10 @@
     let globalSettings = null;
     let blacklist = [];
     let progressRadials = {
-        scanPages: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
-        badges: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
-        bots: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
-        botBadges: {currentStep: 0, steps: 0, radialElement: null, textElement: null}
+        scanPages: { currentStep: 0, steps: 0, radialElement: null, textElement: null },
+        badges: { currentStep: 0, steps: 0, radialElement: null, textElement: null },
+        bots: { currentStep: 0, steps: 0, radialElement: null, textElement: null },
+        botBadges: { currentStep: 0, steps: 0, radialElement: null, textElement: null }
     };
     let defaultSettings = {
         matchFriends: false,
@@ -60,7 +60,8 @@
         scanFilters: [],
         autoAddScanFilters: true,
         autoDeleteScanFilters: true,
-        includeSingleCards: false
+        includeSingleCards: false,
+        listFairBotsCards: false
     };
     let cardNames = new Set();
     let tradeParams = {
@@ -71,7 +72,7 @@
     const observer = new MutationObserver((mutationList, observer) => {
         for (const mutation of mutationList) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'data-count') {
-                mutation.target.querySelector('b').innerText = `(${mutation.target.dataset.count})`
+                mutation.target.querySelector('b').innerText = `(${ mutation.target.dataset.count })`
             }
         }
     });
@@ -84,19 +85,19 @@
             console.time(name);  // DEBUG
         }  // DEBUG
     }  // DEBUG
-  // DEBUG
+    // DEBUG
     function debugTimeEnd(name) {  // DEBUG
         if (globalSettings.debug) {  // DEBUG
             console.timeEnd(name);  // DEBUG
         }  // DEBUG
     }  // DEBUG
-  // DEBUG
+    // DEBUG
     function debugPrint(msg) {  // DEBUG
         if (globalSettings.debug) {  // DEBUG
             console.log(new Date().toLocaleTimeString("en-GB", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit", fractionalSecondDigits: 3 }) + " : " + msg);  // DEBUG
         }  // DEBUG
     }  // DEBUG
-  // DEBUG
+    // DEBUG
     function deepClone(object) {
         return JSON.parse(JSON.stringify(object));
     }
@@ -153,14 +154,14 @@
 
     function createScanFilterElement(active, appId, gameName) {
         return `
-            <div id="scan-filter-${appId}" class="friendBlock" style="cursor: auto;">
-                <div class="playerAvatar ${active ? 'ingame' : 'offline'}">
-                    <a target="_blank" rel="noopener noreferrer" href="https://steamcommunity.com/${myProfileLink}/gamecards/${appId}/">
-                        <img class="stretch" src="https://steamcdn-a.akamaihd.net/steam/apps/${appId}/capsule_184x69.jpg">
+            <div id="scan-filter-${ appId }" class="friendBlock" style="cursor: auto;">
+                <div class="playerAvatar ${ active ? 'ingame' : 'offline' }">
+                    <a target="_blank" rel="noopener noreferrer" href="https://steamcommunity.com/${ myProfileLink }/gamecards/${ appId }/">
+                        <img class="stretch" src="https://steamcdn-a.akamaihd.net/steam/apps/${ appId }/capsule_184x69.jpg">
                     </a>
                 </div>
-                <div id="scan-filter-name-${appId}" class="friendBlockContent">${gameName}<br>
-                    <input type="checkbox" data-app-id="${appId}" ${active ? 'checked' : ''}>
+                <div id="scan-filter-name-${ appId }" class="friendBlockContent">${ gameName }<br>
+                    <input type="checkbox" data-app-id="${ appId }" ${ active ? 'checked' : '' }>
                 </div>
             </div>
         `.replaceAll(/(  |\n)/g, '');
@@ -185,12 +186,12 @@
             return `
             <div>
                 <span style="width: 80px; display: inline-block;">
-                    ${idx === 0 ? "Sort bots by:" : "…then by:"}
+                    ${ idx === 0 ? "Sort bots by:" : "…then by:" }
                 </span>
-                <select class="asf-stm-select" id="sortBotsBy${idx}">
-                    ${options.map( ({ value, text }) =>
-                        `<option value="${value}" ${globalSettings.sortBotsBy[idx] === value ? 'selected' : ''}>${text}</option>`
-                    ).join('')}
+                <select class="asf-stm-select" id="sortBotsBy${ idx }">
+                    ${ options.map(({ value, text }) =>
+                `<option value="${ value }" ${ globalSettings.sortBotsBy[idx] === value ? 'selected' : '' }>${ text }</option>`
+            ).join('') }
                 </select>
             </div>`.replaceAll(/(  |\n)/g, '');
         }
@@ -238,8 +239,9 @@
                 globalSettings.autoAddScanFilters = configDialog.querySelector("#autoAddScanFilters").checked;
                 globalSettings.autoDeleteScanFilters = configDialog.querySelector("#autoDeleteScanFilters").checked;
                 globalSettings.includeSingleCards = configDialog.querySelector("#includeSingleCards").checked;
+                globalSettings.listFairBotsCards = configDialog.querySelector("#listFairBotsCards").checked;
                 let filters = Object.fromEntries(Array.from(configDialog.querySelectorAll('input[data-app-id]'), x => [x.dataset.appId, x.checked]));
-                globalSettings.scanFilters.forEach(x => {x.active = filters[x.appId]});
+                globalSettings.scanFilters.forEach(x => { x.active = filters[x.appId] });
                 blacklist = textToArray(configDialog.querySelector("#blacklist").value);
                 SaveConfig();
             } else {
@@ -292,13 +294,13 @@
 
     function AddScanFilter(appId) {
         if (appId <= 0) {
-            return {success: false, message: 'Invalid AppID'};
+            return { success: false, message: 'Invalid AppID' };
         }
         if (globalSettings.scanFilters.findIndex(x => x.appId == appId) != -1) {
-            return {success: false, message: 'Filter exists'};
+            return { success: false, message: 'Filter exists' };
         }
-        globalSettings.scanFilters.push({appId: appId, title: appId, active: true});
-        return {success: true, message: 'Added'};
+        globalSettings.scanFilters.push({ appId: appId, title: appId, active: true });
+        return { success: true, message: 'Added' };
     }
 
     function ResetScanFilters() {
@@ -327,11 +329,11 @@
         const ratio = progressRadials[radial].currentStep / totalSteps;
         const degrees = ratio * 360;
 
-        progressRadials[radial].radialElement.style.setProperty('--progress', `${degrees}deg`);
+        progressRadials[radial].radialElement.style.setProperty('--progress', `${ degrees }deg`);
         if (progressRadials[radial].currentStep >= totalSteps) {
             progressRadials[radial].textElement.textContent = '✓';
         } else {
-            progressRadials[radial].textElement.textContent = `${progressRadials[radial].currentStep} / ${totalSteps}`
+            progressRadials[radial].textElement.textContent = `${ progressRadials[radial].currentStep } / ${ totalSteps }`
         }
     }
 
@@ -341,7 +343,7 @@
             return;
         }
 
-        unsafeWindow.ShowConfirmDialog("CONFIRMATION", `Are you sure you want to blacklist bot ${steamID} ?`).done(function () {
+        unsafeWindow.ShowConfirmDialog("CONFIRMATION", `Are you sure you want to blacklist bot ${ steamID } ?`).done(function () {
             blacklist.push(steamID);
             SaveConfig();
         });
@@ -372,7 +374,7 @@
             "/": '&#x2F;',
         };
         const reg = /[&<>"'/]/ig;
-        return nickname.replace(reg, (match)=>(map[match]));
+        return nickname.replace(reg, (match) => (map[match]));
     }
 
     function populateCards(item) {
@@ -383,8 +385,8 @@
             for (let k = 0; k < item.cards[j].count; k++) {
                 let cardTemplate = `
                     <div class="showcase_slot">
-                        <img class="image-container" src="${itemIcon}/98x115">
-                        <div class="commentthread_subscribe_hint" style="width: 98px;">${itemName}</div>
+                        <img class="image-container" src="${ itemIcon }/98x115">
+                        <div class="commentthread_subscribe_hint" style="width: 98px;">${ itemName }</div>
                     </div>
                 `;
                 htmlCards += cardTemplate.replaceAll(/(  |\n)/g, '');
@@ -435,13 +437,13 @@
 
         let tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=';
         if (globalSettings.matchFriends) {
-            tradeUrl += `${bots.Result[index].SteamID}&source=asfstm`;
+            tradeUrl += `${ bots.Result[index].SteamID }&source=asfstm`;
         } else {
-            tradeUrl += `${getPartner(bots.Result[index].SteamID)}&token=${bots.Result[index].TradeToken}&source=asfstm`;
+            tradeUrl += `${ getPartner(bots.Result[index].SteamID) }&token=${ bots.Result[index].TradeToken }&source=asfstm`;
         }
         debugPrint(tradeUrl);  // DEBUG
 
-        let botProfileLink = globalSettings.matchFriends ? `${bots.Result[index].SteamIDText}` : `profiles/${bots.Result[index].SteamID}`;
+        let botProfileLink = globalSettings.matchFriends ? `${ bots.Result[index].SteamIDText }` : `profiles/${ bots.Result[index].SteamID }`;
         let matches = "";
         let any = "";
         let appIdList = [];
@@ -464,7 +466,7 @@
             //add filter
             let checkBox = document.getElementById("astm_" + appId);
             if (checkBox === null) {
-                let newFilter = `<span style="margin-right: 15px; white-space: nowrap; display: inline-block;"><input type="checkbox" id="astm_${appId}" checked="" /><label for="astm_${appId}" data-count="1">${gameName} <b>(1)</b></label></span>`;
+                let newFilter = `<span style="margin-right: 15px; white-space: nowrap; display: inline-block;"><input type="checkbox" id="astm_${ appId }" checked="" /><label for="astm_${ appId }" data-count="1">${ gameName } <b>(1)</b></label></span>`;
                 let spanTemplate = document.createElement("template");
                 spanTemplate.innerHTML = newFilter.trim();
                 filterWidget.appendChild(spanTemplate.content.firstChild);
@@ -493,7 +495,7 @@
         template.innerHTML = rowTemplate.trim();
         let mainContentDiv = document.getElementsByClassName("maincontent")[0];
         let newChild = template.content.firstChild;
-        newChild.querySelector(`#blacklist_${bots.Result[index].SteamID}`).addEventListener("click", blacklistEventHandler, true);
+        newChild.querySelector(`#blacklist_${ bots.Result[index].SteamID }`).addEventListener("click", blacklistEventHandler, true);
         newChild.querySelector(".filter_all").addEventListener("click", filterAllEventHandler);
         mainContentDiv.appendChild(newChild);
         checkRow(newChild);
@@ -542,6 +544,53 @@
             }
         }
         SaveParams();
+    }
+
+    function listAll(index, callback) {
+        let itemsToSend = [];
+        let itemsToReceive = [];
+        debugPrint("bot's cards");  // DEBUG
+        debugPrint(JSON.stringify(botBadges));  // DEBUG
+
+        for (let i = 0; i < botBadges.length; i++) {
+            let theirBadge = deepClone(botBadges[i]);
+            debugPrint("botapp=" + theirBadge.appId);  // DEBUG
+            for (let j = 0; j < theirBadge.maxCards; j++) {
+                if (theirBadge.cards[j].count > 0) {
+                    let itemToReceive = {
+                        item: theirBadge.cards[j].item,
+                        count: theirBadge.cards[j].count,
+                        iconUrl: theirBadge.cards[j].iconUrl,
+                        hash: theirBadge.cards[j].hash,
+                    };
+                    let receiveMatch = itemsToReceive.find((item) => item.appId == theirBadge.appId);
+                    if (receiveMatch === undefined) {
+                        itemsToReceive.push({
+                            appId: theirBadge.appId,
+                            title: theirBadge.title,
+                            cards: [itemToReceive],
+                        });
+                        itemsToSend.push({
+                            appId: theirBadge.appId,
+                            title: theirBadge.title,
+                            cards: [],
+                        });
+                    } else {
+                        receiveMatch.cards.push(itemToReceive);
+                    }
+                }
+            }
+        }
+        bots.Result[index].itemsToSend = itemsToSend;
+        bots.Result[index].itemsToReceive = itemsToReceive;
+        if (itemsToReceive.length > 0) {
+            storeMatches(bots.Result[index].SteamID, itemsToSend, itemsToReceive);
+            addMatchRow(index);
+            callback();
+        } else {
+            debugPrint("no cards");  // DEBUG
+            callback();
+        }
     }
 
     function compareCards(index, callback) {
@@ -763,7 +812,7 @@
                             if (xhr.response != undefined) {
                                 debugPrint("eresult = " + xhr.response.eresult);  // DEBUG
                             }
-                            stopEventCleanup(`Badge data fetch error: ${myBadges[index].appId}`);
+                            stopEventCleanup(`Badge data fetch error: ${ myBadges[index].appId }`);
                             return;
                         }
                     } catch (error) {
@@ -785,7 +834,7 @@
                     );
                 } else {
                     if (status !== 200) {
-                        debugPrint(`Error getting badge data: ${status}`);  // DEBUG
+                        debugPrint(`Error getting badge data: ${ status }`);  // DEBUG
                     } else {
                         debugPrint("Error getting own badge data, wrong badge " + myBadges[index].appId);  // DEBUG
                         setTimeout(
@@ -797,7 +846,7 @@
                             globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                         );
                     }
-                    stopEventCleanup(`Error getting badge data: ${status}`);
+                    stopEventCleanup(`Error getting badge data: ${ status }`);
                     return;
                 }
             };
@@ -834,7 +883,7 @@
             debugPrint("badge " + i + JSON.stringify(myBadges[i]));  // DEBUG
 
             myBadges[i].cards.sort((a, b) => b.count - a.count);
-            if (myBadges[i].cards[0].count - myBadges[i].cards[myBadges[i].cards.length - 1].count < 2 && !globalSettings.includeSingleCards) {
+            if (myBadges[i].cards[0].count - myBadges[i].cards[myBadges[i].cards.length - 1].count < 2 && !globalSettings.includeSingleCards && !globalSettings.listFairBotsCards) {
                 //nothing to match, remove from list.
                 myBadges.splice(i, 1);
                 continue;
@@ -860,7 +909,7 @@
         /* Add badges with duplicates in scan filters. */
         if (globalSettings.autoAddScanFilters) {
             const addToScanFilters = myBadges.filter(aBadge => !globalSettings.scanFilters.find(aFilter => aFilter.appId == aBadge.appId));
-            const newScanFilters = Array.from(addToScanFilters, aBadge => ({appId: aBadge.appId, title: aBadge.title, active: true}));
+            const newScanFilters = Array.from(addToScanFilters, aBadge => ({ appId: aBadge.appId, title: aBadge.title, active: true }));
             globalSettings.scanFilters = globalSettings.scanFilters.concat(newScanFilters);
         }
 
@@ -895,8 +944,8 @@
         }
 
         if (
-            (bots.Result[userindex].MatchEverything && !globalSettings.anyBots) ||
-            (!bots.Result[userindex].MatchEverything && !globalSettings.fairBots) ||
+            (bots.Result[userindex].MatchEverything && (!globalSettings.anyBots || globalSettings.listFairBotsCards)) ||
+            (!bots.Result[userindex].MatchEverything && !globalSettings.fairBots && !globalSettings.listFairBotsCards) ||
             bots.Result[userindex].TotalInventoryCount < globalSettings.botMinItems ||
             (globalSettings.botMaxItems > 0 && bots.Result[userindex].TotalInventoryCount > globalSettings.botMaxItems) ||
             blacklist.includes(bots.Result[userindex].SteamID)
@@ -924,7 +973,7 @@
         }
 
         if (index < botBadges.length) {
-            let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
+            let profileLink = globalSettings.matchFriends ? `${ bots.Result[userindex].SteamIDText }` : `profiles/${ bots.Result[userindex].SteamID }`;
             updateProgress('botBadges');
 
             let url = "https://steamcommunity.com/" + profileLink + "/gamecards/" + botBadges[index].appId;
@@ -1001,7 +1050,7 @@
                         // private inventory?
                         debugPrint(xhr.response.documentElement.outerHTML);  // DEBUG
                         const elemCount = xhr.response.documentElement.querySelectorAll('.badge_detail_tasks').length;  // DEBUG
-                        debugPrint(`elemCount = ${elemCount} (1?)`);  // DEBUG
+                        debugPrint(`elemCount = ${ elemCount } (1?)`);  // DEBUG
                         errors++;
                     }
                 } else {
@@ -1018,7 +1067,7 @@
                     );
                 } else {
                     if (status !== 200) {
-                        debugPrint(`Error getting badge data: ${status}`);  // DEBUG
+                        debugPrint(`Error getting badge data: ${ status }`);  // DEBUG
                     } else {
                         debugPrint("Error getting badge data, malformed HTML. Ignoring badge " + botBadges[index].appId);  // DEBUG
                         setTimeout(
@@ -1030,7 +1079,7 @@
                             globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                         );
                     }
-                    stopEventCleanup(`Error getting badge data: ${status}`);
+                    stopEventCleanup(`Error getting badge data: ${ status }`);
                     return;
                 }
             };
@@ -1078,16 +1127,29 @@
         debugTimeEnd("Filter and sort");  // DEBUG
 
         debugPrint(bots.Result[userindex].SteamID);  // DEBUG
-        compareCards(userindex, function () {
-            setTimeout(
-                (function (userindex) {
-                    return function () {
-                        GetCards(0, userindex);
-                    };
-                })(userindex + 1),
-                globalSettings.weblimiter,
-            );
-        });
+        if (globalSettings.listFairBotsCards) {
+            listAll(userindex, function () {
+                setTimeout(
+                    (function (userindex) {
+                        return function () {
+                            GetCards(0, userindex);
+                        };
+                    })(userindex + 1),
+                    globalSettings.weblimiter,
+                );
+            });
+        } else {
+            compareCards(userindex, function () {
+                setTimeout(
+                    (function (userindex) {
+                        return function () {
+                            GetCards(0, userindex);
+                        };
+                    })(userindex + 1),
+                    globalSettings.weblimiter,
+                );
+            });
+        }
     }
 
     function getBadges(page) {
@@ -1194,7 +1256,7 @@
                 }
             } else {
                 if (status !== 200) {
-                    debugPrint(`Error getting badge page: ${status}`);  // DEBUG
+                    debugPrint(`Error getting badge page: ${ status }`);  // DEBUG
                 } else {
                     debugPrint('Error getting badge page, malformed HTML');  // DEBUG
                 }
@@ -1243,7 +1305,7 @@
             statusElement.style.color = '#ffa7a2';
         }
         appIdBox.value = null;
-        setTimeout(function() {
+        setTimeout(function () {
             statusElement.style.transition = "opacity 3s ease-out";
             statusElement.style.opacity = 0;
         }, 0);
@@ -1253,29 +1315,29 @@
         return new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
                 method: 'GET',
-                url: `https://steamcommunity.com/${myProfileLink}/gamecards/${appId}`,
+                url: `https://steamcommunity.com/${ myProfileLink }/gamecards/${ appId }`,
                 onload: (response) => {
                     try {
                         const selector = response.responseText.split('profile_small_header_location">')[2];
                         if (!selector) {
-                            const element = document.querySelector(`#scan-filter-${appId}`);
+                            const element = document.querySelector(`#scan-filter-${ appId }`);
                             if (element) {
                                 element.remove();
                             }
                             globalSettings.scanFilters = globalSettings.scanFilters.filter(x => x.appId !== appId);
-                            resolve(`Invalid appId: ${appId}`);
+                            resolve(`Invalid appId: ${ appId }`);
                         }
                         const title = selector.split('</span')[0];
                         globalSettings.scanFilters.find(x => x.appId == appId).title = title;
-                        const anchor = document.querySelector(`#scan-filter-name-${appId}`);
+                        const anchor = document.querySelector(`#scan-filter-name-${ appId }`);
                         if (anchor) {
                             [...anchor.childNodes].find(x => x.nodeType === Node.TEXT_NODE).nodeValue = title;
                         }
                         resolve(title);
-                    } catch (error) {reject(error);}
+                    } catch (error) { reject(error); }
                 },
-                onerror: (error) => {reject(error);},
-                ontimeout: (error) => {reject(error);}
+                onerror: (error) => { reject(error); },
+                ontimeout: (error) => { reject(error); }
             });
         });
     }
@@ -1342,7 +1404,7 @@
     function stopButtonEvent() {
         document.querySelector('#asf_stm_stop_div').hidden = true;
         stop = true;
-        Object.values(progressRadials).map(x => {x.textElement.textContent = '❌'});
+        Object.values(progressRadials).map(x => { x.textElement.textContent = '❌' });
     }
 
     function stopEventCleanup(reason) {
@@ -1350,7 +1412,7 @@
         document.querySelector('#throbber').style.display = 'none';
         enableButton();
         document.querySelector('#asf_stm_stop_div').hidden = true;
-        console.log(`Stopping: ${reason}`);
+        console.log(`Stopping: ${ reason }`);
     }
 
     function buttonPressedEvent() {
@@ -1823,7 +1885,7 @@
         ///// STM functions /////
 
         try {
-            if (window.location.href.includes("source=asfstm") && !globalSettings.includeSingleCards) {
+            if (window.location.href.includes("source=asfstm") && !globalSettings.includeSingleCards && !globalSettings.listFairBotsCards) {
                 LoadConfig();
                 let params = LoadParams();
 

@@ -184,6 +184,12 @@
                     <a class="tooltip hover_tooltip" data-tooltip-text="Also scan for possible trades with cards you only have one copy of. This most likely only makes sense if you filter for specific games.">
                         <img src="${questionmarkURL}">
                     </a>
+                    <br>
+                    <span class="asf-stm-margin-right">Just list cards from fair bots</span>
+                    <input type="checkbox" id="listFairBotsCards" ${globalSettings.listFairBotsCards ? 'checked' : ''} class="asf-stm-checkbox">
+                    <a class="tooltip hover_tooltip" data-tooltip-text="Lists all cards from fair bots for the selected games. Even if no trade is possible. Use this to see if any bot even has the card you're looking for.">
+                        <img src="${questionmarkURL}">
+                    </a>
                 </div>
             </fieldset>
 
